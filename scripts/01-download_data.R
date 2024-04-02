@@ -1,26 +1,27 @@
 #### Preamble ####
-# Purpose: Downloads and saves the data from [...UPDATE THIS...]
-# Author: Rohan Alexander [...UPDATE THIS...]
-# Date: 11 February 2023 [...UPDATE THIS...]
-# Contact: rohan.alexander@utoronto.ca [...UPDATE THIS...]
+# Purpose: Describe how the process was downloaded
+# Author: Yi Fei Pang
+# Date: 04 April 2023
+# Contact: yifei.pang@mail.utoronto.ca
 # License: MIT
-# Pre-requisites: [...UPDATE THIS...]
-# Any other information needed? [...UPDATE THIS...]
+# Pre-requisites: Having access to kaggle.com and having downloaded the raw data
 
 
 #### Workspace setup ####
-library(opendatatoronto)
 library(tidyverse)
-# [...UPDATE THIS...]
+library(haven)
+library(here)
 
 #### Download data ####
-# [...ADD CODE HERE TO DOWNLOAD...]
 
-
+# Data for precious metals were downloaded here: https://www.kaggle.com/datasets/damianprsk/precious-metals-price-dataset?resource=download
+# Data for crypto was downloaded here: https://www.kaggle.com/datasets/himanshunakrani/cryptocurrencies-dataset?select=crypto_data_updated_13_november.csv
+# Both datasets were downloaded manually from kaggle.com
 
 #### Save data ####
-# [...UPDATE THIS...]
-# change the_raw_data to whatever name you assigned when you downloaded it.
-write_csv(the_raw_data, "inputs/data/raw_data.csv") 
+
+metals <- read_csv(here::here("inputs/data/raw_data/metals_price.csv"))
+crypto <- read_csv(here::here("inputs/data/raw_data/crypto_data_updated_13_november.csv"))
+
 
          
