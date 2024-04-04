@@ -24,10 +24,10 @@ library(here)
 
 #### Save data ####
 
-eth <- read_csv(here::here("inputs/data/raw_data/ETH-USD.csv"))
-btc <- read_csv(here::here("inputs/data/raw_data/BTC-USD.csv"))
-silver <- read_csv(here::here("inputs/data/raw_data/gold.csv"))
-gold <- read_csv(here::here("inputs/data/raw_data/silver.csv"))
+eth <- read_csv(here::here("data/raw_data/ETH-USD.csv"))
+btc <- read_csv(here::here("data/raw_data/BTC-USD.csv"))
+silver <- read_csv(here::here("data/raw_data/silver.csv"))
+gold <- read_csv(here::here("data/raw_data/gold.csv"))
 
 
 
