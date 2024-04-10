@@ -1,14 +1,16 @@
 ---
-title: "My title"
-subtitle: "My subtitle if needed"
+title: "Precious Metals Or Crypto, Where Should I Invest?"
+subtitle: "A Historical Analysis of the Two Major Asset Categories 2017-Present"
 author: 
-  - First author
-  - Another author
-thanks: "Code and data are available at: LINK."
-date: today
-date-format: long
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
-format: pdf
+  - Yi Fei Pang
+thanks: "Code and data are available at: https://github.com/apang00/investment-comparison"
+date: "`r Sys.time()`"
+date-format: "D MMMM YYYY"
+format: 
+  pdf:
+    documentclass: article
+    geometry: margin = 1in
+    abstract: ""
 number-sections: true
 bibliography: references.bib
 ---
@@ -19,7 +21,10 @@ bibliography: references.bib
 #| message: false
 
 library(tidyverse)
-library(palmerpenguins)
+library(here)
+library(knitr)
+library(readr)
+library(ggplot2)
 ```
 
 

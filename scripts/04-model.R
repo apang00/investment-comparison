@@ -12,8 +12,11 @@ library(rstanarm)
 library(ggplot2)
 
 #### Read data ####
-crypto <- read_csv(here::here("data/analysis_data/crypto.csv"))
-metals <- read_csv(here::here("data/analysis_data/metals.csv"))
+crypto <- read_csv(here::here("data/analysis_data/crypto prices.csv"))
+metals <- read_csv(here::here("data/analysis_data/metals prices.csv"))
+cryptov <- read_csv(here::here("data/analysis_data/crypto volatility.csv"))
+metalsv <- read_csv(here::here("data/analysis_data/metals volatility.csv"))
+
 
 ### Model data ####
 compilation <- ggplot() +
@@ -24,28 +27,34 @@ compilation <- ggplot() +
   labs(title = "Asset Comparisons 2017 to Present",
        x = "Date", y = "Closing Amount ($USD)") +
   scale_color_manual(values = c("Ethereum" = "royalblue", "Bitcoin" = "sienna2", "Gold" = "#FFD700", "Silver" = "#C0C0C0"),
-                     labels = c("Ethereum" = "Ethereum (20 Units)", "Bitcoin" = "Bitcoin", "Gold" = "Gold (30 oz.)", "Silver" = "Silver (2000 oz.)")) +
+                     labels = c("Ethereum" = "Ethereum (20 Units)", "Bitcoin" = "Bitcoin", "Gold" = "Gold (30 oz.)", "Silver" = "Silver (2500 oz.)")) +
   guides(color = guide_legend(title = "Assets")) +  
   scale_x_date(date_breaks = "1 year", date_labels = "%Y")
-  
 
-"
-first_model <-
-  stan_glm(
-    formula = flying_time ~ length + width,
-    data = analysis_data,
-    family = gaussian(),
-    prior = normal(location = 0, scale = 2.5, autoscale = TRUE),
-    prior_intercept = normal(location = 0, scale = 2.5, autoscale = TRUE),
-    prior_aux = exponential(rate = 1, autoscale = TRUE),
-    seed = 853
-  )"
+compilation
+
+volatility <- ggplot() +
+  geom_line(data = cryptov, aes(x = Date, y = eth_ATR_norm, color = "Ethereum"), size = 0.75) +
+  geom_line(data = cryptov, aes(x = Date, y = btc_ATR_norm, color = "Bitcoin"), size = 0.75) +
+  geom_line(data = metalsv, aes(x = Date, y = gold_ATR_norm, color = "Gold"), size = 0.75) +
+  geom_line(data = metalsv, aes(x = Date, y = silver_ATR_norm, color = "Silver"), size = 0.75) +
+  labs(title = "Normalized ATR of Assets 2017 to Present",
+       x = "Date", y = "Normalized ATR Value") +
+  scale_color_manual(values = c("Ethereum" = "royalblue", "Bitcoin" = "sienna2", "Gold" = "#FFD700", "Silver" = "#C0C0C0")) +
+  guides(color = guide_legend(title = "Assets")) +  
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y")
+
+volatility
 
 
 #### Save model ####
 saveRDS(
   compilation,
-  file = here::here("models/compilation.rds")
+  file = here::here("models/price chart.rds")
 )
 
+saveRDS(
+  compilation,
+  file = here::here("models/volatility chart.rds")
+)
 
