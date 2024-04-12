@@ -1,20 +1,27 @@
-# History files
-.Rhistory
-.Rapp.history
+Hi Eleanor,
 
-# Session Data files
-.RData
-.RDataTmp
 
-# User-specific files
-.Ruserdata
 
-# Output files from R CMD build
-/*.tar.gz
+My name is Alex and I am a fourth-year student in Canada graduating very very soon and on the lookout for developer positions all over the world. As much as I love AI the AI-generated letter that Linkedin drafted up for me, I wanted to write one by hand because it feels more genuine. I hope this is a better read...
 
-# RStudio files
-.Rproj.user/
 
-# Mac Os files
-.DS_Store
 
+I have worked extensively with Python both in school and applicatively in work. Though I am not the most familiar with the ETL workflow, I would love to learn more and do my own research.
+
+
+
+Aside from being a good fit, I love stability more than anything even though my resume might tell a different story. Now that I am graduating, I want nothing more than to find a place where I can progress in my field and settle down. That 98% retention rate sounds like absolute heaven.
+
+
+
+I applied through Easy Apply on LinkedIn, and I totally understand if I am not the most qualified for the role. But if there are any similar roles along the lines of development and data work, I would very much appreciate it if you could consider me for those as well.
+
+
+
+Excuse me for this long message, and thank you for taking the time to read it all. I look forward to hearing back from you!
+
+
+
+Cheers,
+
+Alex
