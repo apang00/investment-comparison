@@ -12,6 +12,7 @@ library(dplyr)
 library(haven)
 library(here)
 library(TTR)
+library(arrow)
 
 #### Clean data ####
 

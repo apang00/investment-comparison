@@ -3,7 +3,7 @@ title: "Precious Metals Or Crypto, Where Should I Invest?"
 subtitle: "A Historical Analysis of the Two Major Asset Categories 2017-Present"
 author: 
   - Yi Fei Pang
-thanks: "Code and data are available at: https://github.com/apang00/investment-comparison"
+thanks: "Code and data supporting this analysis is available at: https://github.com/apang00/investment-comparison"
 date: "`r Sys.time()`"
 date-format: "D MMMM YYYY"
 toc: true
@@ -11,7 +11,7 @@ format:
   pdf:
     documentclass: article
     geometry: margin = 1in
-    abstract: "This paper utilizes and compares datasets extracted from Yahoo Finance and Business insider to perform a financial analysis. The analysis indicates a negative correlation in relation to economic health and precious metal and crpto rates. Furthermore, it shows the growth of crytpo as an asset has been much stronger than precious metals. The importance of this analysis can be very beneficial today especially since there is a recession happening."
+    abstract: "This paper utilizes and compares datasets of the two most held precious metals and the two most held cryptocurrencies. A few simple price analyses were implemented to determine which assets were more profitable along with range formulas to determine volatility. Observations show that in the recent years, crypto has been a much more profitable investment. However, precious metals are much less volatile and consistent. The importance of this analysis can be very beneficial today due to the economic turmoil and investors asking: Do I want an asset that's profitable, consistent, or both?"
 number-sections: true
 bibliography: references.bib
 ---
@@ -31,19 +31,24 @@ library(ggplot2)
 {{< pagebreak >}}
 # Introduction
 
-Throughout history, human currency has always been evolving alongside out civilization. From the archaic days of the bartering systems where people traded raw materials, coins and precious metals emerged, then came paper money. As humans evolved even further, electronic banking with credit card emerged and now finally, crytpocurrencies. At every stage of society, humans have tied a value on an economic instrument as a way of wealth storage and wealth exchange.
-
-Gold and silver has been an asset since the ancient civilizations of Egyptians and Incas. Both metals are malleable and therefore can easily be stamped into coins or molded into jewelry. Furthermore, pure gold and silver does not corrode or tarnish, thus making them timeless assets [@InvestopediaMetals]. Thousands of years later, in our modern era, gold and silver still remain as solid assets because of their durability, liquidity, and stability.
-
-However, in the recent years, a new asset has emerged and that is cryptocurrencies. Originally developed as a method of making untraceable transactions, this technology has quickly gained popularity and has transformed into more of an investment rather than a currency. 
+Throughout history, human currency has always been evolving alongside our civilization. From the archaic days of the bartering systems where people traded raw materials, coins and precious metals emerged, then came paper money. As humans evolved even further, electronic banking with credit card emerged and now finally, crytpocurrencies. At every stage of society, humans have tied a value on an economic instrument as a way of wealth storage and wealth exchange.
 
 
+Gold and silver has been an asset since the ancient civilizations of Egyptians and Incas. Both metals are malleable and therefore can easily be stamped into coins or molded into jewelry. Furthermore, pure gold and silver does not corrode or tarnish, thus making them timeless assets [@InvestopediaMetals]. Thousands of years later, in our modern era, gold and silver still remain as solid assets because of their durability, liquidity, and stability.Through economic turmoil, precious metals have proven to be an asset that not only holds it's value but has been significantly outperforming the stock markets since the turn of the millennium [@Forbes].In the recent decade, a new category of asset has emerged and performed tremendously well.That is the cryptocurrency. Originally developed as a method of making untraceable transactions and used almost exclusively by the Dark Web crowd, this technology has quickly gained popularity and has transformed into more of an investment rather than to obfuscate transactions. Cryptocurrencies such as Bitcoin and Ethereum has seen growths of ~20,000% and ~35,000% respectively at their peaks. 
 
-# Data {#sec-data}
+
+Since both precious metals and cryptocurrencies have been performing exceptionally well, this paper will analyse asset is a better hold depending on the goal of the investor. I will not only focus on the trends for the separate assets through price charts, but also evaluate correlations between the different category of assets through regression. Moreover, ranges will be calculated as a method to assess risk and volatility and compared between the two asset categories. Overall, it was evident precious metals tend to grow consistently over the year without being significantly affected by the economy or the introduction of other assets. In contrast, cryptocurrencies are much more volatile, seeing massive price ranges. However, cryptocurrencies tend to grow at much higher rates. Over the past decade, both precious metals and cryptocurrencies have been phenomenal assets and looks to continue to rise in value in the foreseeable future.
+
+
+In the data section of the paper, there will be an introduction regarding where the data came from, and for what period the data was extracted. Furthermore, the data cleaning and visualization process will be detailed for creating the price, volatility, and regression charts. Next, the model section will explore the linear models used, why they were used, and how they represent the correlations. Following that, the results will be discussed includes elements such as the R-square values and p-values. To conclude, we will figure out potential weaknesses of the analysis along with the next steps and improvements. 
+
+
+{{< pagebreak >}}
+# Data 
 
 ## Data Description
 
-This paper uses four separated datasets from two different sources. The gold  [@goldbusinessinsider] and silver [@silverbusinessinsider] raw datasets were sourced from a subsidiary of Business Insider, Market Insider. These two datasets include detailed financial information regarding gold and silver data starting from late 2017 until present. The other two cryptocurrency datasets for Ethereum [@ethyahoofinance] and Bitcoin [@btcyahoofinance] come from Yahoo Finance also ranging from late 2017 until present. All four datasets include details such as daily open and closing prices as well as high/lows and volume data. In addition, all data is marked in US dollars. The data is sourced from live charts for the daily open, close, and volume recorded on exchanges and recorded at the end of every day. The cleaning, modelling, and analysis of these four datasets will be carried out using the statistical programming language `R` [@citeR], using the packages `tidyverse`[@citetidy], `here`[@citeHere], `rstanarm`[@rstanarm], `dplyr` (Wickham et al. 2021), and `ggplot2`[@citeGG].
+This paper uses four separated datasets from two different sources. The gold  [@goldbusinessinsider] and silver [@silverbusinessinsider] raw datasets were sourced from a subsidiary of Business Insider, Market Insider. These two datasets include detailed financial information regarding gold and silver data starting from late 2017 until present. The other two cryptocurrency datasets for Ethereum [@ethyahoofinance] and Bitcoin [@btcyahoofinance] come from Yahoo Finance also ranging from late 2017 until present. All four datasets include details such as daily open and closing prices as well as high/lows and volume data. In addition, all prices in the data is in US dollars. The data is sourced from live charts for the daily open, close, and volume recorded on exchanges and recorded at the end of every day. The cleaning, modelling, and analysis of these four datasets will be carried out using the statistical programming language `R` [@citeR], using the packages `tidyverse`[@citetidy], `here`[@citeHere], `rstanarm`[@rstanarm], `dplyr` (Wickham et al. 2021), and `ggplot2`[@citeGG].
 
 
 ```{r}
@@ -136,8 +141,9 @@ The goal of our modelling strategy is twofold. Firstly,...
 Here we briefly describe the Bayesian analysis model used to investigate... Background details and diagnostics are included in [Appendix -@sec-model-details].
 
 ## Model set-up
+The model will be linear where:
 
-Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
+Define $y$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
 
 \begin{align} 
 y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\

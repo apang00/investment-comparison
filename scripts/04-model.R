@@ -17,8 +17,12 @@ metals <- read_csv(here::here("data/analysis_data/metals prices.csv"))
 cryptov <- read_csv(here::here("data/analysis_data/crypto volatility.csv"))
 metalsv <- read_csv(here::here("data/analysis_data/metals volatility.csv"))
 
+price_join <- merge(crypto, metals, by = "Date", all = FALSE)
+
 
 ### Model data ####
+
+# Price Data chart
 compilation <- ggplot() +
   geom_line(data = crypto, aes(x = Date, y = eth_Close, color = "Ethereum"), size = 0.75) +
   geom_line(data = crypto, aes(x = Date, y = btc_Close, color = "Bitcoin"), size = 0.75) +
@@ -33,6 +37,7 @@ compilation <- ggplot() +
 
 compilation
 
+# Volatility Data Chart
 volatility <- ggplot() +
   geom_line(data = cryptov, aes(x = Date, y = eth_ATR_norm, color = "Ethereum"), size = 0.75) +
   geom_line(data = cryptov, aes(x = Date, y = btc_ATR_norm, color = "Bitcoin"), size = 0.75) +
@@ -46,6 +51,42 @@ volatility <- ggplot() +
 
 volatility
 
+# Regression Chart BTC-Gold
+bgfit <- lm(gold_Close ~ btc_Close, data = price_join)
+bgplot <- ggplot(price_join, aes(x = btc_Close, y = gold_Close)) +
+  geom_point(color = "blue", size = 2) +
+  geom_abline(intercept = coef(bgfit)[1], slope = coef(bgfit)[2], color = "red") +
+  labs(title = "Bitcoin vs. Gold Prices Regression Model",
+       x = "Bitcoin Closing Price", y = "Gold Closing Price")
+print(bgplot)
+
+# Regression for BTc-Silver
+bsfit <- lm(silver_Close ~ btc_Close, data = price_join)
+bsplot <- ggplot(price_join, aes(x = btc_Close, y = silver_Close)) +
+  geom_point(color = "blue", size = 2) +
+  geom_abline(intercept = coef(bsfit)[1], slope = coef(bsfit)[2], color = "red") +
+  labs(title = "Bitcoin vs. Silver Prices Regression Model",
+       x = "Bitcoin Closing Price", y = "Silver Closing Price")
+print(bsplot)
+
+# Regression for Ethereum-Gold
+egfit <- lm(gold_Close ~ eth_Close, data = price_join)
+egplot <- ggplot(price_join, aes(x = eth_Close, y = gold_Close)) +
+  geom_point(color = "blue", size = 2) +
+  geom_abline(intercept = coef(egfit)[1], slope = coef(egfit)[2], color = "red") +
+  labs(title = "Ethereum vs. Gold Prices Regression Model",
+       x = "Ethereum Closing Price", y = "Gold Closing Price")
+print(egplot)
+
+# Regression for Ethereum-Silver
+esfit <- lm(silver_Close ~ eth_Close, data = price_join)
+esplot <- ggplot(price_join, aes(x = eth_Close, y = silver_Close)) +
+  geom_point(color = "blue", size = 2) +
+  geom_abline(intercept = coef(esfit)[1], slope = coef(esfit)[2], color = "red") +
+  labs(title = "Ethereum vs. Silver Prices Regression Model",
+       x = "Ethereum Closing Price", y = "Silver Closing Price")
+print(esplot)
+
 
 #### Save model ####
 saveRDS(
@@ -54,7 +95,27 @@ saveRDS(
 )
 
 saveRDS(
-  compilation,
+  volatility,
   file = here::here("models/volatility chart.rds")
+)
+
+saveRDS(
+  bgplot,
+  file = here::here("models/btcgold Regression.rds")
+)
+
+saveRDS(
+  bsplot,
+  file = here::here("models/btcsilver Regression.rds")
+)
+
+saveRDS(
+  egplot,
+  file = here::here("models/ethgold Regression.rds")
+)
+
+saveRDS(
+  esplot,
+  file = here::here("models/ethsilver Regression.rds")
 )
 
