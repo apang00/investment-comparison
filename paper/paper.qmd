@@ -28,32 +28,104 @@ library(readr)
 library(ggplot2)
 ```
 
-
+{{< pagebreak >}}
 # Introduction
 
-You can and should cross-reference sections and sub-sections. We use @citeR and @rohan.
+Throughout history, human currency has always been evolving alongside out civilization. From the archaic days of the bartering systems where people traded raw materials, coins and precious metals emerged, then came paper money. As humans evolved even further, electronic banking with credit card emerged and now finally, crytpocurrencies. At every stage of society, humans have tied a value on an economic instrument as a way of wealth storage and wealth exchange.
 
-The remainder of this paper is structured as follows. @sec-data....
+Gold and silver has been an asset since the ancient civilizations of Egyptians and Incas. Both metals are malleable and therefore can easily be stamped into coins or molded into jewelry. Furthermore, pure gold and silver does not corrode or tarnish, thus making them timeless assets [@InvestopediaMetals]. Thousands of years later, in our modern era, gold and silver still remain as solid assets because of their durability, liquidity, and stability.
+
+However, in the recent years, a new asset has emerged and that is cryptocurrencies. Originally developed as a method of making untraceable transactions, this technology has quickly gained popularity and has transformed into more of an investment rather than a currency. 
 
 
 
 # Data {#sec-data}
 
-Some of our data is of penguins (@fig-bills), from @palmerpenguins.
+## Data Description
+
+This paper uses four separated datasets from two different sources. The gold  [@goldbusinessinsider] and silver [@silverbusinessinsider] raw datasets were sourced from a subsidiary of Business Insider, Market Insider. These two datasets include detailed financial information regarding gold and silver data starting from late 2017 until present. The other two cryptocurrency datasets for Ethereum [@ethyahoofinance] and Bitcoin [@btcyahoofinance] come from Yahoo Finance also ranging from late 2017 until present. All four datasets include details such as daily open and closing prices as well as high/lows and volume data. In addition, all data is marked in US dollars. The data is sourced from live charts for the daily open, close, and volume recorded on exchanges and recorded at the end of every day. The cleaning, modelling, and analysis of these four datasets will be carried out using the statistical programming language `R` [@citeR], using the packages `tidyverse`[@citetidy], `here`[@citeHere], `rstanarm`[@rstanarm], `dplyr` (Wickham et al. 2021), and `ggplot2`[@citeGG].
+
 
 ```{r}
+#| include: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(here)
+library(knitr)
+
+price <- read_csv(here::here("data/analysis_data/crypto prices.csv"))
+volatility <- read_csv(here::here("data/analysis_data/crypto volatility.csv"))
+p_5 <- head(price, 5)
+v_5 <- head(volatility, 5)
 
 ```
 
-Talk more about it.
+## Price Data
 
-And also planes (@fig-planes). (You can change the height and width, but don't worry about doing that until you have finished every other aspect of the paper - Quarto will try to make it look nice and the defaults usually work well once you have enough text.)
+The crypto prices and metals prices cleaned datasets feature the closing price points of the two cryptocurrencies eth_Close, btc_Close, along with the respective close prices for the metals gold_Close and silver_Close. In addition, there is a date column for the closing prices. These datasets range from November 12, 2017 until the date they were fetched, April 4th, 2024. Though there is data for every single day of the year, within the aforementioned range, the cleaned dataset only takes into account the closing balance of the crytpocurrency/precious metal every 15 days, or the 1st and 15th of every month. The purpose of that is to reduce noise and filters out short term volatility and gives the data a more long term perspective. In addition to the date adjustment, there are also adjustments made to the closing prices. For readability in graphs, all assets were readjusted to have a present value of in the range of 1 Bitcoin. The adjustments made were 20x Ethereum, 30x Gold (oz.), and 2500x Silver (oz.).
+
 
 ```{r}
+#| echo: false
+#| warning: false
+#| label: tbl-1
+#| tbl-cap: "A summary table for crypto price data"
 
+kable(p_5)
 ```
 
-Talk way more about it. 
+
+## Volatility Data
+
+The volatility data was separated much like the prices datasets. One dataset for crypto volatility and one for metals volatility. In both datasets, volatility was calculated by using a normalized average true range. 
+
+
+First, the true range was calculated with:
+
+
+TR = Max [(H - L), |H - Cp|, |L - Cp|]
+
+Where:
+H = Today's high
+L = Today's low
+Cp = Yesterday's closing price
+Max = Highest value of the three terms
+Source: [@InvestopediaFormula]
+
+
+Then the average true range was calculated with and represented by (asset)_ATR in @tbl-2:
+
+
+(1/n) * Σ(TRi)
+
+Where:
+TRi = Particular true range for each period (e.g., first day's TR, second day's TR, etc.)
+Σ = Summation symbol (summing up all the individual TRi values)
+n = Number of periods (15 in the data to match the price data)
+Source: [@InvestopediaFormula]
+
+
+The normalized average true range was calculated by normalizing the ATR value with the closing price of the asset and represented by (asset)_ATR_norm in @tbl-2:
+
+
+ATR/Cp
+
+Where: 
+ATR = The ATR of the asset 
+Cp = Current day's closing price
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| label: tbl-2
+#| tbl-cap: "A summary table for crypto volatility"
+
+kable(v_5)
+
+```
 
 
 
@@ -111,17 +183,17 @@ first_model <-
 
 # Discussion
 
-## First discussion point {#sec-first-point}
+## 
 
 If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
 
 ## Second discussion point
 
-## Third discussion point
+## Biases and Weaknesses
+One of the greatest weaknesses stems from the limited historical data of cryptocurrencies. The value of precious metals can be trace back centuries and has solidified itself as a solid holding asset while cryptocurrencies such as Ethereum was only introduced in the late 2016s. Therefore, the only results and conclusion that can be made...
 
-## Weaknesses and next steps
-
-Weaknesses and next steps should also be included.
+## Next Steps
+Some next steps I can take for future devlopments can be to continue to monitor the price of crypto over the next few decades and see how it reacts to different economic coniditions and how that compares to precious metals.
 
 \newpage
 
