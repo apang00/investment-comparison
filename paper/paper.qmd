@@ -48,7 +48,7 @@ In the data section of the paper, there will be an introduction regarding where 
 
 ## Data Description
 
-This paper uses four separated datasets from two different sources. The gold  [@goldbusinessinsider] and silver [@silverbusinessinsider] raw datasets were sourced from a subsidiary of Business Insider, Market Insider. These two datasets include detailed financial information regarding gold and silver data starting from late 2017 until present. The other two cryptocurrency datasets for Ethereum [@ethyahoofinance] and Bitcoin [@btcyahoofinance] come from Yahoo Finance also ranging from late 2017 until present. All four datasets include details such as daily open and closing prices as well as high/lows and volume data. In addition, all prices in the data is in US dollars. The data is sourced from live charts for the daily open, close, and volume recorded on exchanges and recorded at the end of every day. The cleaning, modelling, and analysis of these four datasets will be carried out using the statistical programming language `R` [@citeR], using the packages `tidyverse`[@citetidy], `here`[@citeHere], `rstanarm`[@rstanarm], `dplyr` (Wickham et al. 2021), and `ggplot2`[@citeGG].
+This paper uses four separated datasets from two different sources. The gold  [@goldbusinessinsider] and silver [@silverbusinessinsider] raw datasets were sourced from a subsidiary of Business Insider, Market Insider. These two datasets include detailed financial information regarding gold and silver price and volume data starting from late 2017 until present. The other two cryptocurrency datasets for Ethereum [@ethyahoofinance] and Bitcoin [@btcyahoofinance] come from Yahoo Finance also ranging from late 2017 until present. All four datasets include details such as daily open and closing prices as well as high/lows and volume data. In addition, all prices in the data is in US dollars. The data is sourced from live charts for the daily open, close, and volume recorded on exchanges and recorded at the end of every day. The cleaning, modelling, and analysis of these four datasets will be carried out using the statistical programming language `R` [@citeR], using the packages `tidyverse`[@citetidy], `here`[@citeHere], `rstanarm`[@rstanarm], `dplyr` (Wickham et al. 2021), and `ggplot2`[@citeGG].
 
 
 ```{r}
@@ -60,16 +60,18 @@ library(tidyverse)
 library(here)
 library(knitr)
 
-price <- read_csv(here::here("data/analysis_data/crypto prices.csv"))
+crypto <- read_csv(here::here("data/analysis_data/crypto prices.csv"))
+metals <- read_csv(here::here("data/analysis_data/metals prices.csv"))
 volatility <- read_csv(here::here("data/analysis_data/crypto volatility.csv"))
-p_5 <- head(price, 5)
+p_5 <- head(crypto, 5)
+m_5 <- head(metals, 5)
 v_5 <- head(volatility, 5)
 
 ```
 
 ## Price Data
 
-The crypto prices and metals prices cleaned datasets feature the closing price points of the two cryptocurrencies eth_Close, btc_Close, along with the respective close prices for the metals gold_Close and silver_Close. In addition, there is a date column for the closing prices. These datasets range from November 12, 2017 until the date they were fetched, April 4th, 2024. Though there is data for every single day of the year, within the aforementioned range, the cleaned dataset only takes into account the closing balance of the crytpocurrency/precious metal every 15 days, or the 1st and 15th of every month. The purpose of that is to reduce noise and filters out short term volatility and gives the data a more long term perspective. In addition to the date adjustment, there are also adjustments made to the closing prices. For readability in graphs, all assets were readjusted to have a present value of in the range of 1 Bitcoin. The adjustments made were 20x Ethereum, 30x Gold (oz.), and 2500x Silver (oz.).
+The crypto prices and metals prices cleaned datasets feature the closing price points of the two cryptocurrencies eth_Close and btc_Close, along with the respective close prices for the metals gold_Close and silver_Close. In addition, there is a date column for the closing prices. These datasets range from November 12, 2017 until the date they were fetched, April 4th, 2024. Though there is data for every single day of the year within the aforementioned range, the cleaned dataset only takes into account the closing balance of the crytpocurrency/precious metal every 15 days, or the 1st and 15th of every month. The purpose is to reduce noise and filters out short term volatility and gives the data a more long term perspective. In addition to the date adjustment, there are adjustments made to the closing prices as well. For readability in graphs, all assets were readjusted to have a present value of in the vicinity of 1 Bitcoin. The adjustments made were 20x Ethereum, 30x Gold (oz.), and 2500x Silver (oz.).
 
 
 ```{r}
@@ -81,7 +83,16 @@ The crypto prices and metals prices cleaned datasets feature the closing price p
 kable(p_5)
 ```
 
+```{r}
+#| echo: false
+#| warning: false
+#| label: tbl-2
+#| tbl-cap: "A summary table for metal price data"
 
+kable(m_5)
+```
+
+{{< pagebreak >}}
 ## Volatility Data
 
 The volatility data was separated much like the prices datasets. One dataset for crypto volatility and one for metals volatility. In both datasets, volatility was calculated by using a normalized average true range. 
@@ -93,81 +104,113 @@ First, the true range was calculated with:
 TR = Max [(H - L), |H - Cp|, |L - Cp|]
 
 Where:
+
+
 H = Today's high
+
+
 L = Today's low
+
+
 Cp = Yesterday's closing price
+
+
 Max = Highest value of the three terms
+
+
 Source: [@InvestopediaFormula]
 
-
-Then the average true range was calculated with and represented by (asset)_ATR in @tbl-2:
+__________
+Then the average true range was calculated with and represented by (asset)_ATR in @tbl-3:
 
 
 (1/n) * Σ(TRi)
 
 Where:
 TRi = Particular true range for each period (e.g., first day's TR, second day's TR, etc.)
+
+
 Σ = Summation symbol (summing up all the individual TRi values)
+
+
 n = Number of periods (15 in the data to match the price data)
+
+
 Source: [@InvestopediaFormula]
 
 
-The normalized average true range was calculated by normalizing the ATR value with the closing price of the asset and represented by (asset)_ATR_norm in @tbl-2:
+__________
+In the final step, the normalized average true range was calculated by normalizing the ATR value with the closing price of the asset and represented by (asset)_ATR_norm in @tbl-3:
 
 
 ATR/Cp
 
 Where: 
+
+
 ATR = The ATR of the asset 
+
+
 Cp = Current day's closing price
 
+{{< pagebreak >}}
+## Data Visualization
 
 ```{r}
 #| echo: false
 #| warning: false
-#| label: tbl-2
-#| tbl-cap: "A summary table for crypto volatility"
+#| label: fig-1
+#| fig-cap: "Price Comparison All Assets 2017 to Present"
 
-kable(v_5)
+compilation <- ggplot() +
+  geom_line(data = crypto, aes(x = Date, y = eth_Close, color = "Ethereum"), size = 0.75) +
+  geom_line(data = crypto, aes(x = Date, y = btc_Close, color = "Bitcoin"), size = 0.75) +
+  geom_line(data = metals, aes(x = Date, y = gold_Close, color = "Gold"), size = 0.75) +
+  geom_line(data = metals, aes(x = Date, y = silver_Close, color = "Silver"), size = 0.75) +
+  labs(title = "Asset Prices",
+       x = "Date", y = "Closing Amount ($USD)") +
+  scale_color_manual(values = c("Ethereum" = "royalblue", "Bitcoin" = "sienna2", "Gold" = "#FFD700", "Silver" = "#C0C0C0"),
+                     labels = c("Ethereum" = "Ethereum (20 Units)", "Bitcoin" = "Bitcoin", "Gold" = "Gold (30 oz.)", "Silver" = "Silver (2500 oz.)")) +
+  guides(color = guide_legend(title = "Assets")) +  
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y")
 
+compilation
 ```
+The figure above shows the trends of all four separate assets. Over the past 7 years, it's evident that all the assets have increased in value significantly. Gold tends to have the least fluctuations and grew from close to 38,000 USD per 30 oz. to around 66,000 USD. Both precious metals are more stable than the cryptos. However, both ctyprocurrencies began at less than 10,000 (1 btc and 20 units of eth) and ended up well over 66,000 USD, resulting in a much more drastic return.
 
-
-
+{{< pagebreak >}}
 # Model
+The goal of my model is to analyse the correlation between crytpo prices and precious metals prices. Through observing the previous price chart, there can be a perception of linear correlation between the two asset categories over 2017-2024 since all 4 assets show an increasing trend. Therefore, to represent this relationship, I will choose a linear regression model.
 
-The goal of our modelling strategy is twofold. Firstly,...
-
-Here we briefly describe the Bayesian analysis model used to investigate... Background details and diagnostics are included in [Appendix -@sec-model-details].
 
 ## Model set-up
 The model will be linear where:
 
-Define $y$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
+Define $y_b$ as the Bitcoin price and $y_e$ as the Ethereum price. Then $x_g$ and $x_s$ will be the price of gold and silver respectively. 
 
-\begin{align} 
-y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
-\mu_i &= \alpha + \beta_i + \gamma_i\\
-\alpha &\sim \mbox{Normal}(0, 2.5) \\
-\beta &\sim \mbox{Normal}(0, 2.5) \\
-\gamma &\sim \mbox{Normal}(0, 2.5) \\
-\sigma &\sim \mbox{Exponential}(1)
-\end{align}
+$$
+y_e + y_b =  b_0 + b_1(x_g + x_s) + c
+$$
+This can be simplified if the metals were aggregated into $y_i = y_e + y_b$ and $x_i = x_g + x_s$.
 
-We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
+$$
+y_i = b_0 + b_1x_i + c
+$$
+Where:
+
+-   $y_i$ is the aggregated representation of the prices of the two major cryptocurrencies
+-   $x_i$ is the aggregated representation of the prices of the two major precious metals
+-   $b_0$ is the intercept where the price of the precious metals would be equal to zero
+-   $b_1$ is the slope coefficient/estimated rate of change for cryptos for every one unit of change for metals
+-   $c$ is the error variable that accounts for deviations from the predicted value
 
 
-### Model justification
 
-We expect a positive relationship between the size of the wings and time spent aloft. In particular...
-
-We can use maths by including latex between dollar signs, for instance $\theta$.
+### Model Justification
+I expect there to be a positive correlation between 
 
 
 # Results
-
-Our results are summarized in @tbl-modelresults.
-
 ```{r}
 #| echo: false
 #| eval: true
@@ -176,62 +219,68 @@ Our results are summarized in @tbl-modelresults.
 
 library(rstanarm)
 
-first_model <-
-  readRDS(file = here::here("models/price chart.rds"))
+first_model <- readRDS(file = here::here("models/volatility chart.rds"))
+
 ```
+
+## Price Results
+
+## Volatility Results
+
+Our results are summarized in...
 
 ```{r}
+#| echo: false
+#| warning: false
+#| label: fig-3s
+#| fig-cap: "Volatility Chart"
 
+first_model
 ```
+The Volatility chart shows that
 
 
-
-
+{{< pagebreak >}}
 # Discussion
 
-## 
+## Precious Metals As An Investment
+As the world enters a recession, we can confidently look at historical data for precious metals near and far and identify that it would do well to hold its value and steadily rise through economic failures and inflation. As shown in @fig-1, precious metals, especially gold is almost unaffected by the recession caused by Covid-19. In addition, @fig-2 demonstrates that the normalized average true range values for precious metals tend to be significantly lower than that of cryptocurrencies. That is suggestive that precious metals are stable investments and can be treated as very stable investments. As my previous models predict, precious metals will continue to increase in value in the future. As an investor, if you are looking to invest in precious metals the two most common options will be to either invest in derivative contracts or through gold mutual funds [@InvestopediaInv]. The second option would be to buy the physical metals in the form of coins or bars, however, this method is much more difficult to keep track of and lack mobility. Overall, precious metals is a great investment to dedicate to for those who wants to hedge against inflation, diversify their portfolio, while maintaining stability.
 
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
+## Cryptocurrencies As An Investment
+Cryptocurrencies is the new wave. Aside from Bitcoin and Ethereum, we are have seen the rise of many other successful cryptocurrencies such as Monero, Litecoin, and Stellar Lumens just to name a few. @fig-1 can attest to the substantial growth of cryptocurrencies over the last decade. However, @fig-2 shows that even though Bitcoin and Ethereum has been extremely profitable, they are both extremely volatile assets with normalized average true range values over 5 times that of precious metals. As an investor, cryptocurrencies can be much more appealing, especially towards the newer crowd. Investing in crypto is much more straightforward than precious metals. With large crypto exchanges such as Coinbase, Binance, and Kraken gaining popularity buying crypto has never been easier. Moreover, crypto wallets can come in the form of a USB Ledger or even an app on the appstore. This makes the asset extremely lightweight and mobile. 
 
-## Second discussion point
+## Different Stroke For Different Folks
+Both cryptocurrencies and precious metals are amazing investments.Throughout my analysis, I have concluded that there is a correlation between the two category of assets, both assets have seen massive growth, and both still have a lot of room to develop in the future. For the readers still asking: Which asset should I invest in? I believe the answer is this:
+
+
+For those who are looking for something long term to hold onto. For those who want to sit on an asset for medium to long term, precious metals is the better investment. Whether you would want to buy futures, or invest in mutual funds, go for precious metals. This process will involve more time in effort whether it's purchasing or liquidating. Opening a mutual fund or dealing with derivative contracts is not simple and will take days to attain. Similarly, purchasing, carrying, and selling physical metals is also a tedious task. The result however, will be a long term investment that is stable and profitable.
+
+
+For those who are looking for something long or short term, and that are more risk-seeking, cryptocurrencies will be your cup of tea. Though seemingly much more profitable in the recent years, these assets are much more volatile and is very dependent on economic climate. Moreover, compared to precious metals, buying, storing, and selling is a breeze. In cryptocurrencies is an asset with very high potential ceiling and as blockchain technology continues to progress, cryptocurrencies have a very bright future.
+
 
 ## Biases and Weaknesses
 One of the greatest weaknesses stems from the limited historical data of cryptocurrencies. The value of precious metals can be trace back centuries and has solidified itself as a solid holding asset while cryptocurrencies such as Ethereum was only introduced in the late 2016s. Therefore, the only results and conclusion that can be made...
 
 ## Next Steps
-Some next steps I can take for future devlopments can be to continue to monitor the price of crypto over the next few decades and see how it reacts to different economic coniditions and how that compares to precious metals.
-
-\newpage
-
-\appendix
-
-# Appendix {-}
+Some next steps I can take for future developments can be to continue to monitor the price of crypto over the next few decades and see how it reacts to different economic conditions and how that compares to precious metals.
 
 
-# Additional data details
+## Closing Remarks
+Before investing in anything, nothing beats your own research. An investment should be considered only after sufficient self evaluation. Ask yourself:
 
-# Model details {#sec-model-details}
 
-## Posterior predictive check
+-   How much money am I looking to invest?
 
-In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows...
 
-In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows... 
+-   What is my tolerance for risk?
 
-```{r}
 
-```
+-   What are my investment goals and objectives?
 
-## Diagnostics
 
-@fig-stanareyouokay-1 is a trace plot. It shows... This suggests...
 
-@fig-stanareyouokay-2 is a Rhat plot. It shows... This suggests...
-
-```{r}
-
-```
-
+I have given but a brief overview an analyses of two popular modern day assets. The rest is up for you to discover.
 
 
 \newpage

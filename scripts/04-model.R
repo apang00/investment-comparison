@@ -79,7 +79,11 @@ egplot <- ggplot(price_join, aes(x = eth_Close, y = gold_Close)) +
 print(egplot)
 
 # Regression for Ethereum-Silver
-esfit <- lm(silver_Close ~ eth_Close, data = price_join)
+esfit <- stan_glm(
+  formula = silver_Close ~ eth_Close,
+  data = price_join,
+  family = gaussian()
+)
 esplot <- ggplot(price_join, aes(x = eth_Close, y = silver_Close)) +
   geom_point(color = "blue", size = 2) +
   geom_abline(intercept = coef(esfit)[1], slope = coef(esfit)[2], color = "red") +
