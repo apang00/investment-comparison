@@ -121,7 +121,7 @@ Max = Highest value of the three terms
 Source: [@InvestopediaFormula]
 
 __________
-Then the average true range was calculated with and represented by (asset)_ATR in @tbl-3:
+Then the average true range was calculated with and represented by (asset)_ATR in @fig-1:
 
 
 (1/n) * Σ(TRi)
@@ -140,7 +140,7 @@ Source: [@InvestopediaFormula]
 
 
 __________
-In the final step, the normalized average true range was calculated by normalizing the ATR value with the closing price of the asset and represented by (asset)_ATR_norm in @tbl-3:
+In the final step, the normalized average true range was calculated by normalizing the ATR value with the closing price of the asset and represented by (asset)_ATR_norm in @fig-1:
 
 
 ATR/Cp
@@ -206,38 +206,74 @@ Where:
 
 
 
-### Model Justification
-I expect there to be a positive correlation between 
+## Model Justification
+Both precious metals and cryptocurrencies have been used historically as a way to hedge against inflation, so when the economy doesn't do well, investors look to buy up these assets as a way to preserve the value of their cash. Furthermore, these assets follow a similar integrity where they are mined, either digitally or physically, and there is a decreasing supply it the more they are mined. Considering all factors aforementioned, a linear regression model is a reasonable framework for assessing the relationship between the two assets.
 
-
+{{< pagebreak >}}
 # Results
 ```{r}
 #| echo: false
-#| eval: true
 #| warning: false
 #| message: false
+#| include: false
 
 library(rstanarm)
-
+crypto$totalc <- crypto$eth_Close + crypto$btc_Close
+metals$totalm <- metals$gold_Close + metals$silver_Close
+price_join <- merge(crypto, metals, by = "Date", all = FALSE)
+price_join <- select(price_join, Date, totalc, totalm)
 first_model <- readRDS(file = here::here("models/volatility chart.rds"))
+esfit <- stan_glm(
+  formula = totalc ~ totalm,
+  data = price_join,
+  family = gaussian()
+)
+
+reg <- ggplot(price_join, aes(x = totalm, y = totalc)) +
+  geom_point(color = "blue", size = 2) +
+  geom_abline(intercept = coef(esfit)[1], slope = coef(esfit)[2], color = "red") +
+  labs(title = "Crypto vs. Metals Prices Regression Model",
+       x = "Metals Closing Price", y = "Cryptos Closing Price")
 
 ```
 
 ## Price Results
 
-## Volatility Results
+```{r}
+#| label: fig-2
+#| fig-cap: "Model showing relationship between metals prices and crypto prices"
+#| echo: false
+#| warning: false
 
-Our results are summarized in...
+reg
+```
+
+@fig-2 suggests that the prices of aggregated metals (gold and silver) and that of aggregated cryptos (Bitcoin and Ethereum) have a positive and strong relationship. This is reinforced when observing the summary data below. There is a positive coefficient at 1.6 for totalm (aggregated metals). In other words, as the price of the aggregated metals increase by 1 unit, the model predicts an increase in aggregated crypto by 1.6 units on average. The correlation analysis concludes an r value of ~0.71. The aforementioned information suggest a moderately strong and positive relationship between precious metals aggregate price and crypto aggregate prices. Though there is a positive correlation between the price factors of these asset categories, there is no implication of causation.
 
 ```{r}
 #| echo: false
 #| warning: false
-#| label: fig-3s
-#| fig-cap: "Volatility Chart"
+#| fig-cap: "Summary Data for Regression Model"
+
+esfit
+"__________________________"
+"Correlation:"
+correlation <- cor(price_join$totalm, price_join$totalc)
+correlation
+```
+
+## Volatility Results
+
+The volatility results strongly suggests that cryptocurrencies are much more unstable compared to precious metals. I use normalized average true range as a measure because it takes the average range between high and low prices over a specific period. Higher ATR values suggest higher volatility because there is a greater shift in prices. The normalized ATR is the ATR normalized over the closing price of that day as a way to balance and fairly judge the ATR of the four individual assets. @fig-3 shows evidently that the normal ATR values of Bitcoin and Ethereum dwarfs those of gold and silver. Gold is the most consistent with a normalized ATR resting consistently at 0.01, silver is the second most stable coming in at around 0.02. The two cryptocurrencies see way higher normalized ATR values I would estimate to be around 0.05 on average and a much more turbulent trend line. This data is congruent with our price chart @fig-1 where gold had the most stable price rise followed by silver and then the cryptos. Because the normalized ATR for the cryptocurrencies are many times higher than that of precious metals, we can assume that they are also significantly more volatile.
+
+```{r}
+#| echo: false
+#| warning: false
+#| label: fig-3
+#| fig-cap: "Volatility Chart Observed Through Normalized Average True Range"
 
 first_model
 ```
-The Volatility chart shows that
 
 
 {{< pagebreak >}}
@@ -247,27 +283,31 @@ The Volatility chart shows that
 As the world enters a recession, we can confidently look at historical data for precious metals near and far and identify that it would do well to hold its value and steadily rise through economic failures and inflation. As shown in @fig-1, precious metals, especially gold is almost unaffected by the recession caused by Covid-19. In addition, @fig-2 demonstrates that the normalized average true range values for precious metals tend to be significantly lower than that of cryptocurrencies. That is suggestive that precious metals are stable investments and can be treated as very stable investments. As my previous models predict, precious metals will continue to increase in value in the future. As an investor, if you are looking to invest in precious metals the two most common options will be to either invest in derivative contracts or through gold mutual funds [@InvestopediaInv]. The second option would be to buy the physical metals in the form of coins or bars, however, this method is much more difficult to keep track of and lack mobility. Overall, precious metals is a great investment to dedicate to for those who wants to hedge against inflation, diversify their portfolio, while maintaining stability.
 
 ## Cryptocurrencies As An Investment
-Cryptocurrencies is the new wave. Aside from Bitcoin and Ethereum, we are have seen the rise of many other successful cryptocurrencies such as Monero, Litecoin, and Stellar Lumens just to name a few. @fig-1 can attest to the substantial growth of cryptocurrencies over the last decade. However, @fig-2 shows that even though Bitcoin and Ethereum has been extremely profitable, they are both extremely volatile assets with normalized average true range values over 5 times that of precious metals. As an investor, cryptocurrencies can be much more appealing, especially towards the newer crowd. Investing in crypto is much more straightforward than precious metals. With large crypto exchanges such as Coinbase, Binance, and Kraken gaining popularity buying crypto has never been easier. Moreover, crypto wallets can come in the form of a USB Ledger or even an app on the appstore. This makes the asset extremely lightweight and mobile. 
+Cryptocurrencies is the new wave. Aside from Bitcoin and Ethereum, we are have seen the rise of many other successful cryptocurrencies such as Monero, Litecoin, and Stellar Lumens just to name a few. @fig-1 can attest to the substantial growth of cryptocurrencies over the last decade: Bitcoin grew from 7,000 USD to almost 70,000 USD in the span of less than 7 years. Ethereum grew from around 330 USD to over 3500 USD. 10x of an investment over less than 7 years is sensationally high retruns. However, @fig-3 shows that even though Bitcoin and Ethereum has been extremely profitable, they are both extremely volatile assets with normalized average true range values many times that of precious metals. Due to the extreme volatility of cryptos, many begin looking at crypto as assets for day trading or short term options. As an investor, cryptocurrencies can be much more appealing, especially towards the newer crowd because investing in crypto is much more straightforward than precious metals. With large crypto exchanges such as Coinbase, Binance, and Kraken gaining popularity buying crypto has never been easier. Moreover, crypto wallets can come in the form of a USB Ledger or even an app on the appstore. This makes the asset extremely lightweight and mobile. 
 
 ## Different Stroke For Different Folks
-Both cryptocurrencies and precious metals are amazing investments.Throughout my analysis, I have concluded that there is a correlation between the two category of assets, both assets have seen massive growth, and both still have a lot of room to develop in the future. For the readers still asking: Which asset should I invest in? I believe the answer is this:
+Both cryptocurrencies and precious metals are amazing investments.Throughout my analysis, I have concluded that there is a strong positive relationship between the two category of assets, both assets have seen massive growth, and both still have a lot of room to develop in the future. For the readers still asking: Which asset should I invest in? I believe the answer is this:
 
 
 For those who are looking for something long term to hold onto. For those who want to sit on an asset for medium to long term, precious metals is the better investment. Whether you would want to buy futures, or invest in mutual funds, go for precious metals. This process will involve more time in effort whether it's purchasing or liquidating. Opening a mutual fund or dealing with derivative contracts is not simple and will take days to attain. Similarly, purchasing, carrying, and selling physical metals is also a tedious task. The result however, will be a long term investment that is stable and profitable.
 
 
-For those who are looking for something long or short term, and that are more risk-seeking, cryptocurrencies will be your cup of tea. Though seemingly much more profitable in the recent years, these assets are much more volatile and is very dependent on economic climate. Moreover, compared to precious metals, buying, storing, and selling is a breeze. In cryptocurrencies is an asset with very high potential ceiling and as blockchain technology continues to progress, cryptocurrencies have a very bright future.
+For those who are looking for something long or short term, and that are more risk-seeking, cryptocurrencies will be your cup of tea. Though seemingly much more profitable in the recent years, these assets are much more volatile and is very dependent on economic climate. Movements such as currencies being delisted from major exchanges or countries enforcing crypto laws can result in massive movements and potentially even the downfall of a cryptocurrency. This potentially tumultuous investment will take significantly more effort when it comes to monitoring activity and making adjustments. However, compared to precious metals, buying, storing, and selling is a breeze. Cryptocurrencies are assets with a very high potential ceiling and as blockchain technology continues to progress, cryptocurrencies have a very bright future.
 
 
 ## Biases and Weaknesses
-One of the greatest weaknesses stems from the limited historical data of cryptocurrencies. The value of precious metals can be trace back centuries and has solidified itself as a solid holding asset while cryptocurrencies such as Ethereum was only introduced in the late 2016s. Therefore, the only results and conclusion that can be made...
+The potential bias in my analysis comes from data recording errors from yahoo finance. However, that should be pretty minimal. Another potential bias could result from selection bias that occurs in my data cleaning. I chose to only take the first and fifteenth day of every month when creating my price charts and Normal ATR charts. Though said selection process can help reduce noise and ignore short term variations, I could very well have missed out on certain trends that occur on the days between. Aside from data biases, one incorrect assumption could be that the relationship between crypto and precious metals is linear. In many instances from the price chart @fig-1, there seem to be exponential growth from crypto compared to linear grown from metals and this is observed again in @fig-2 where there is a slight curve in the points suggesting potential a exponential regression model.
+
+One of the greatest weaknesses in my analysis stems from the limited historical data of cryptocurrencies. The value of precious metals can be trace back a century ago and has solidified itself as a strong holding asset while cryptocurrencies such as Ethereum was only introduced in the late 2017s. As a relatively immature market paired with easy influence from outside factors such as technological advancements and crypto laws, there are too many qualitative aspects that need to be accounted for but my analysis can only give a quantitative prediction based on historical prices. 
 
 ## Next Steps
-Some next steps I can take for future developments can be to continue to monitor the price of crypto over the next few decades and see how it reacts to different economic conditions and how that compares to precious metals.
+Some next steps I can take for future developments can be to continue to monitor the price of crypto over the next few decades and see how it reacts to different economic patterns and how that compares to precious metals. Moreover, I can include more assets in my comparisons such as technology stocks or real estate. The overall next step for improving this analysis is to increase the amount of factors 
 
 
 ## Closing Remarks
-Before investing in anything, nothing beats your own research. An investment should be considered only after sufficient self evaluation. Ask yourself:
+Before investing in anything, nothing beats individual research. An investment should be considered only after sufficient self evaluations. 
+
+Ask yourself:
 
 
 -   How much money am I looking to invest?
@@ -280,7 +320,7 @@ Before investing in anything, nothing beats your own research. An investment sho
 
 
 
-I have given but a brief overview an analyses of two popular modern day assets. The rest is up for you to discover.
+I have given but a brief overview and analyses of two popular modern day assets. The rest is up for you to discover.
 
 
 \newpage
